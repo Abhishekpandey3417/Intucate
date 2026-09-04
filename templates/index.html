@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intucate – AI Education API</title>
+  <!-- NOTE: Open this page via Flask at http://127.0.0.1:5000 -->
+  <!-- API_BASE points to the Flask server regardless of how this file is served -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d0f1a;
+      --surface:   #151828;
+      --card:      #1c2035;
+      --border:    #2a2f4a;
+      --accent:    #6c63ff;
+      --accent2:   #a78bfa;
+      --green:     #34d399;
+      --red:       #f87171;
+      --text:      #e2e8f0;
+      --muted:     #8892a4;
+      --radius:    12px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: .6rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -.5px;
+    }
+    .logo svg { flex-shrink: 0; }
+    header p {
+      color: var(--muted);
+      margin-top: .4rem;
+      font-size: .95rem;
+    }
+
+    /* ── Badge row ── */
+    .badges {
+      display: flex;
+      gap: .6rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+    .badge {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: .25rem .8rem;
+      font-size: .75rem;
+      font-weight: 500;
+      color: var(--accent2);
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+    }
+    .badge span { color: var(--green); }
+
+    /* ── Layout ── */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 960px;
+    }
+    @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: border-color .2s;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .card-title .endpoint {
+      margin-left: auto;
+      font-size: .7rem;
+      background: rgba(108,99,255,.15);
+      color: var(--accent2);
+      border: 1px solid rgba(108,99,255,.3);
+      border-radius: 6px;
+      padding: .15rem .5rem;
+      font-family: monospace;
+    }
+    .card-desc { font-size: .82rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── Form elements ── */
+    label {
+      font-size: .8rem;
+      font-weight: 500;
+      color: var(--muted);
+      display: block;
+      margin-bottom: .35rem;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: .88rem;
+      padding: .7rem .9rem;
+      resize: vertical;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    textarea:focus, input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(108,99,255,.2);
+    }
+
+    /* ── Button ── */
+    button {
+      width: 100%;
+      padding: .7rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      color: #fff;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+    }
+    button:hover { opacity: .88; }
+    button:active { transform: scale(.98); }
+    button:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── Response box ── */
+    .response-wrap { display: flex; flex-direction: column; gap: .4rem; }
+    .response-label {
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .response-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .8rem 1rem;
+      font-size: .85rem;
+      line-height: 1.6;
+      min-height: 80px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+      transition: border-color .3s;
+    }
+    .response-box.success { border-color: var(--green); }
+    .response-box.error   { border-color: var(--red); color: var(--red); }
+    .response-box.loading { color: var(--muted); font-style: italic; }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      display: none;
+    }
+    .spinning .spinner { display: block; }
+    .spinning .btn-text { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Divider ── */
+    .divider {
+      grid-column: 1 / -1;
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: .5rem 0;
+    }
+
+    /* ── History section ── */
+    .history-section {
+      width: 100%;
+      max-width: 960px;
+      margin-top: 1.5rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+    }
+    .history-section h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--accent2);
+    }
+    #history-list { display: flex; flex-direction: column; gap: .6rem; }
+    .history-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: .7rem 1rem;
+      font-size: .82rem;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: .2rem .8rem;
+      animation: fadeIn .3s ease;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+    .history-item .hi-label { color: var(--muted); font-weight: 500; }
+    .history-item .hi-value { color: var(--text); word-break: break-word; }
+    .history-item .hi-tag {
+      grid-column: 1;
+      font-size: .7rem;
+      padding: .1rem .45rem;
+      border-radius: 4px;
+      font-weight: 600;
+      width: fit-content;
+    }
+    .hi-tag.single { background: rgba(108,99,255,.2); color: var(--accent2); }
+    .hi-tag.batch  { background: rgba(52,211,153,.15); color: var(--green); }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="8" fill="url(#grad)"/>
+        <path d="M8 14h12M14 8v12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+        <defs>
+          <linearGradient id="grad" x1="0" y1="0" x2="28" y2="28">
+            <stop stop-color="#6c63ff"/><stop offset="1" stop-color="#a78bfa"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      Intucate
+    </div>
+    <p>AI-Powered Education API &mdash; Technical Assessment Demo</p>
+  </header>
+
+  <!-- Badges -->
+  <div class="badges">
+    <div class="badge">Flask <span>●</span></div>
+    <div class="badge">MongoDB <span>●</span></div>
+    <div class="badge">OpenAI GPT <span>●</span></div>
+    <div class="badge">Async / Concurrent <span>●</span></div>
+  </div>
+
+  <!-- Two endpoint cards -->
+  <div class="grid">
+
+    <!-- Card 1: /api/chat -->
+    <div class="card">
+      <div class="card-title">
+        💬 Single Chat
+        <span class="endpoint">POST /api/chat</span>
+      </div>
+      <p class="card-desc">
+        Sends one question to the ChatGPT API using the Education_Prompt
+        template stored in MongoDB. Steps 1–5 of the assessment.
+      </p>
+
+      <div>
+        <label for="single-input">Your question</label>
+        <textarea id="single-input" rows="3" placeholder="e.g. How much should I score in each subject to pass CA final?"></textarea>
+      </div>
+
+      <button id="single-btn" onclick="sendSingle()">
+        <span class="btn-text">Send</span>
+        <div class="spinner"></div>
+      </button>
+
+      <div class="response-wrap">
+        <div class="response-label">Response</div>
+        <div class="response-box" id="single-response">Response will appear here…</div>
+      </div>
+    </div>
+
+    <!-- Card 2: /api/chat-batch -->
+    <div class="card">
+      <div class="card-title">
+        ⚡ Batch Chat
+        <span class="endpoint">POST /api/chat-batch</span>
+      </div>
+      <p class="card-desc">
+        Sends multiple questions <strong>concurrently</strong> via
+        <code>asyncio.gather</code>. Each is processed independently;
+        responses are returned in the same order. Step 6 of the assessment.
+      </p>
+
+      <div>
+        <label for="batch-input">Questions (one per line)</label>
+        <textarea id="batch-input" rows="5"
+          placeholder="What is the passing marks for CA final?&#10;How many attempts are allowed?&#10;What subjects are included?"></textarea>
+      </div>
+
+      <button id="batch-btn" onclick="sendBatch()">
+        <span class="btn-text">Send All</span>
+        <div class="spinner"></div>
+      </button>
+
+      <div class="response-wrap">
+        <div class="response-label">Responses</div>
+        <div class="response-box" id="batch-response">Responses will appear here…</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Live history log -->
+  <div class="history-section">
+    <h2>📋 Live Request History</h2>
+    <div id="history-list">
+      <p style="color:var(--muted);font-size:.85rem;">Make a request above to see history.</p>
+    </div>
+  </div>
+
+  <script>
+    const historyList = document.getElementById('history-list');
+
+    function setLoading(btnId, boxId, isLoading) {
+      const btn = document.getElementById(btnId);
+      const box = document.getElementById(boxId);
+      btn.disabled = isLoading;
+      btn.classList.toggle('spinning', isLoading);
+      if (isLoading) {
+        box.className = 'response-box loading';
+        box.textContent = 'Waiting for response…';
+      }
+    }
+
+    function showResult(boxId, text, isError = false) {
+      const box = document.getElementById(boxId);
+      box.className = 'response-box ' + (isError ? 'error' : 'success');
+      box.textContent = text;
+    }
+
+    function addHistory(tag, input, output) {
+      const first = historyList.querySelector('p');
+      if (first) first.remove();
+
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.innerHTML = `
+        <span class="hi-tag ${tag}">${tag.toUpperCase()}</span>
+        <span></span>
+        <span class="hi-label">Input</span>
+        <span class="hi-value">${escHtml(input)}</span>
+        <span class="hi-label">Output</span>
+        <span class="hi-value">${escHtml(output)}</span>
+      `;
+      historyList.prepend(item);
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // Always hit the Flask server on port 5000, even if this HTML is opened
+    // from a different origin (e.g. VS Code Live Server on port 5500)
+    const API_BASE = 'http://127.0.0.1:5000';
+
+    async function sendSingle() {
+      const userInput = document.getElementById('single-input').value.trim();
+      if (!userInput) { alert('Please enter a question.'); return; }
+
+      setLoading('single-btn', 'single-response', true);
+      try {
+        const res = await fetch(API_BASE + '/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userInput })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showResult('single-response', data.response);
+          addHistory('single', userInput, data.response);
+        } else {
+          showResult('single-response', 'Error: ' + (data.error || res.statusText), true);
+        }
+      } catch (e) {
+        showResult('single-response', 'Network error: ' + e.message, true);
+      } finally {
+        setLoading('single-btn', 'single-response', false);
+      }
+    }
+
+    async function sendBatch() {
+      const raw = document.getElementById('batch-input').value.trim();
+      const userInputs = raw.split('\n').map(l => l.trim()).filter(Boolean);
+      if (userInputs.length === 0) { alert('Please enter at least one question.'); return; }
+
+      setLoading('batch-btn', 'batch-response', true);
+      try {
+        const res = await fetch(API_BASE + '/api/chat-batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userInputs })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const formatted = data.responses
+            .map((r, i) => `[${i + 1}] ${r}`)
+            .join('\n\n');
+          showResult('batch-response', formatted);
+          addHistory('batch',
+            userInputs.join(' | '),
+            data.responses.join(' | ').slice(0, 200) + '…'
+          );
+        } else {
+          showResult('batch-response', 'Error: ' + (data.error || res.statusText), true);
+        }
+      } catch (e) {
+        showResult('batch-response', 'Network error: ' + e.message, true);
+      } finally {
+        setLoading('batch-btn', 'batch-response', false);
+      }
+    }
+
+    // Allow Ctrl+Enter to submit in textareas
+    document.querySelectorAll('textarea').forEach(ta => {
+      ta.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && e.ctrlKey) {
+          const id = ta.id;
+          if (id === 'single-input') sendSingle();
+          if (id === 'batch-input') sendBatch();
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

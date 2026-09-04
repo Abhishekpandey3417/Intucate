@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+env/
+venv/
+ENV/
+VENV/
+# Environment files (keep secrets out of repo)
+.env
+.env.example
+# IDE / editor folders
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+# OS generated files
+.DS_Store
+Thumbs.db
+# Docker
+docker-compose.override.yml
+# Pytest / coverage
+htmlcov/
+.coverage
+.coverage.*
+.cache
+# Misc
+*.log
+*.sqlite3
+# Flask instance folder (may contain secret key)
+instance/
+
+# Ignore any stray gemini artifact files
+*.gemini/

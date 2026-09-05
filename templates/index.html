@@ -395,9 +395,9 @@
       return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
-    // Always hit the Flask server on port 5000, even if this HTML is opened
-    // from a different origin (e.g. VS Code Live Server on port 5500)
-    const API_BASE = 'http://127.0.0.1:5000';
+    // Always hit the same origin the page was served from
+    // This allows it to work on both localhost and deployed on Render
+    const API_BASE = '';
 
     async function sendSingle() {
       const userInput = document.getElementById('single-input').value.trim();

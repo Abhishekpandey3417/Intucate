@@ -11,6 +11,7 @@ Intucate is a **Flask‑based AI Education API** that demonstrates the full tech
 6. Support a batch endpoint (`POST /api/chat-batch`) that processes many inputs concurrently with `asyncio.gather`.
 
 The project also ships a **premium‑looking browser UI** (`templates/index.html`) that lets reviewers test the endpoints directly from Chrome.
+The Project is deployed at Url-https://intucate-3.onrender.com
 
 ## Features
 - **Modular architecture** – Blueprint‑based routes, separate `config`, `db`, and `openai_client` modules.
